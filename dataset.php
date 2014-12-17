@@ -33,6 +33,7 @@ while ($line = fgetcsv($listFh, 2048)) {
     $datasetFile = "{$resultPath}/{$line[0]}.csv";
     if (!file_exists($datasetFile)) {
         file_put_contents($datasetFile, file_get_contents($csvBaseUrl . $line[0]));
+        exec("/usr/bin/dos2unix {$datasetFile}");
     }
     if (mime_content_type($datasetFile) === 'application/zip') {
         if ($zip->open($datasetFile) === true) {
@@ -41,6 +42,7 @@ while ($line = fgetcsv($listFh, 2048)) {
                 copy("zip://" . $datasetFile . "#" . $zip->getNameIndex(0), $tmpPath . '/' . $line[0] . '.csv');
                 if (file_exists($tmpPath . '/' . $line[0] . '.csv')) {
                     copy($tmpPath . '/' . $line[0] . '.csv', $datasetFile);
+                    exec("/usr/bin/dos2unix {$datasetFile}");
                 }
             }
             $zip->close();
