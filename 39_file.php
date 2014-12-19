@@ -78,60 +78,56 @@ $prefix = array(
  */
 $dirLen = strlen(__DIR__) + 1;
 $oFh = fopen(__DIR__ . '/39_file.csv', 'w');
-fputcsv($oFh, array('id', 'file', 'url', 'mime', 'size'));
+fputcsv($oFh, array('id', 'type', 'file', 'url', 'mime', 'size'));
 $fh = fopen(__DIR__ . '/dataset/39.csv', 'r');
 while ($line = fgetcsv($fh, 2000, "\t")) {
-    if (!empty($line[11])) {
-        echo "processing {$line[0]}\n";
-        $parts = explode('字第', $line[0]);
-        $parts[1] = substr($parts[1], 0, strpos($parts[1], '號'));
-        if (isset($prefix[$parts[0]])) {
-            $files = explode(';;', $line[11]);
+    echo "processing {$line[0]}\n";
+    $parts = explode('字第', $line[0]);
+    $parts[1] = substr($parts[1], 0, strpos($parts[1], '號'));
+    $targetFolder = "{$resultPath}/{$prefix[$parts[0]]}/{$parts[1]}";
+    if (!file_exists($targetFolder)) {
+        mkdir($targetFolder, 0777, true);
+    }
+    if (isset($prefix[$parts[0]])) {
+        if (!empty($line[3])) {
+            $files = explode(';;', $line[3]);
             foreach ($files AS $k => $v) {
                 $files[$k] = trim($v);
                 if (empty($files[$k])) {
                     unset($files[$k]);
                 }
             }
-            $targetFolder = "{$resultPath}/{$prefix[$parts[0]]}/{$parts[1]}";
-            if (!file_exists($targetFolder)) {
-                mkdir($targetFolder, 0777, true);
-            }
-            if (count($files) > 1) {
-                foreach ($files AS $url) {
-                    $targetFile = $targetFolder . '/' . md5($url);
-                    if (!file_exists($targetFile)) {
-                        file_put_contents($targetFile, file_get_contents($url));
-                    }
-                    fputcsv($oFh, array(
-                        $line[0],
-                        substr($targetFile, $dirLen),
-                        $url,
-                        mime_content_type($targetFile),
-                        filesize($targetFile),
-                    ));
-                }
-            } elseif (isset($dbKeys[$line[0]]) && file_exists("/home/kiang/public_html/drug_images/{$dbKeys[$line[0]]}")) {
-                $url = $files[key($files)];
-                $targetFile = $targetFolder . '/' . md5($url);
-                if (!file_exists($targetFile)) {
-                    exec("mv /home/kiang/public_html/drug_images/{$dbKeys[$line[0]]} {$targetFile}");
-                }
-                fputcsv($oFh, array(
-                    $line[0],
-                    substr($targetFile, $dirLen),
-                    $url,
-                    mime_content_type($targetFile),
-                    filesize($targetFile),
-                ));
-            } else {
-                $url = $files[key($files)];
+            foreach ($files AS $url) {
                 $targetFile = $targetFolder . '/' . md5($url);
                 if (!file_exists($targetFile)) {
                     file_put_contents($targetFile, file_get_contents($url));
                 }
                 fputcsv($oFh, array(
                     $line[0],
+                    '仿單',
+                    substr($targetFile, $dirLen),
+                    $url,
+                    mime_content_type($targetFile),
+                    filesize($targetFile),
+                ));
+            }
+        }
+        if (!empty($line[4])) {
+            $files = explode(';;', $line[4]);
+            foreach ($files AS $k => $v) {
+                $files[$k] = trim($v);
+                if (empty($files[$k])) {
+                    unset($files[$k]);
+                }
+            }
+            foreach ($files AS $url) {
+                $targetFile = $targetFolder . '/' . md5($url);
+                if (!file_exists($targetFile)) {
+                    file_put_contents($targetFile, file_get_contents($url));
+                }
+                fputcsv($oFh, array(
+                    $line[0],
+                    '外盒',
                     substr($targetFile, $dirLen),
                     $url,
                     mime_content_type($targetFile),
