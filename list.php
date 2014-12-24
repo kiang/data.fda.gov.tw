@@ -7,16 +7,17 @@ if (!file_exists($tmpPath)) {
 
 $result = array();
 $pageTotal = 1;
-$recordCount = 71;
+$recordCount = 1;
 $dataset = array();
 for ($i = 1; $i <= $pageTotal; $i ++) {
-    $listUrl = "http://data.fda.gov.tw/frontsite/data/DataAction.do?recordCount=71&maxRecord=10&method=doList&currentPage={$i}";
-    $listFile = $tmpPath . '/list_' . md5($listUrl);
-    if (!file_exists($listFile)) {
-        file_put_contents($listFile, file_get_contents($listUrl));
-    }
-    $listContent = file_get_contents($listFile);
+
     if ($i === 1) {
+        $listUrl = 'http://data.fda.gov.tw/frontsite/data/DataAction.do?method=doList';
+        $listFile = $tmpPath . '/list_' . md5($listUrl);
+        if (!file_exists($listFile)) {
+            file_put_contents($listFile, file_get_contents($listUrl));
+        }
+        $listContent = file_get_contents($listFile);
         $pos = strpos($listContent, 'var pageCount = ');
         if (false === $pos) {
             echo 'pageCount not found';
@@ -24,6 +25,20 @@ for ($i = 1; $i <= $pageTotal; $i ++) {
         }
         $pos += 16;
         $pageTotal = intval(substr($listContent, $pos, strpos($listContent, ';', $pos) - $pos));
+        $pos = strpos($listContent, 'var c = ');
+        if (false === $pos) {
+            echo 'c not found';
+            exit();
+        }
+        $pos += 8;
+        $recordCount = intval(substr($listContent, $pos, strpos($listContent, ';', $pos) - $pos));
+    } else {
+        $listUrl = "http://data.fda.gov.tw/frontsite/data/DataAction.do?recordCount={$recordCount}&maxRecord=10&method=doList&currentPage={$i}";
+        $listFile = $tmpPath . '/list_' . md5($listUrl);
+        if (!file_exists($listFile)) {
+            file_put_contents($listFile, file_get_contents($listUrl));
+        }
+        $listContent = file_get_contents($listFile);
     }
 
     $pos = strpos($listContent, '<div class="dataset">');
