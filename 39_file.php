@@ -80,7 +80,7 @@ $dirLen = strlen(__DIR__) + 1;
 $oFh = fopen(__DIR__ . '/39_file.csv', 'w');
 fputcsv($oFh, array('id', 'type', 'file', 'url', 'mime', 'size'));
 $fh = fopen(__DIR__ . '/dataset/39.csv', 'r');
-while ($line = fgetcsv($fh, 2000, "\t")) {
+while ($line = fgetcsv($fh, 10770, "\t")) {
     echo "processing {$line[0]}\n";
     $parts = explode('字第', $line[0]);
     $parts[1] = substr($parts[1], 0, strpos($parts[1], '號'));
