@@ -17,7 +17,13 @@ foreach ($lines AS $line) {
                     addFile($path);
                 } else {
                     foreach (glob($path . '/*') AS $file) {
-                        addFile($file);
+                        if (is_file($file)) {
+                            addFile($file);
+                        } else {
+                            foreach (glob($file . '/*') AS $subFile) {
+                                addFile($subFile);
+                            }
+                        }
                     }
                 }
             } else {
@@ -35,10 +41,19 @@ if ($currentFileSize > 0) {
     exec("git push");
 }
 
+$fileCount = 0;
+
 function addFile($file) {
-    global $limit, $currentFileSize, $pushCount;
-    $currentFileSize += filesize($file);
-    echo "size: {$currentFileSize} / {$limit}\n";
+    global $limit, $currentFileSize, $pushCount, $fileCount;
+    if (!is_file($file)) {
+        echo "{$file} is not file!!\n";
+        exit();
+    }
+    ++$fileCount;
+    $fileSize = filesize($file);
+    $currentFileSize += $fileSize;
+    $part = substr($file, -51);
+    echo "[{$fileCount}] {$currentFileSize} - {$fileSize} - {$part}\n";
     if ($currentFileSize < $limit) {
         exec("git add {$file}");
     } else {
